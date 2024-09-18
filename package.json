@@ -1,6 +1,6 @@
 {
   "name": "slash-n-dash",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Path based extensions for Lodash",
   "main": "dist/index.js",
   "source": "src/index.js",
