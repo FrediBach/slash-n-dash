@@ -49,12 +49,27 @@ describe("Lodash Extended Methods", () => {
       "a.e.1",
       "a.e.2",
     ]);
+    
+    // OR selector test
+    expect(_.resolveWildcardPath(testObject, "a.b|e.*")).toEqual(["a.b.c", "a.b.d", "a.e.0", "a.e.1", "a.e.2"]);
+
+    // Exclusion selector test
+    expect(_.resolveWildcardPath(testObject, "a.*!e")).toEqual(["a.b", "a.f"]);
   });
 
   test("getWildcard", () => {
     expect(_.getWildcard(testObject, "a.b.c")).toBe(1);
     expect(_.getWildcard(testObject, "a.*.c")).toEqual(1);
     expect(_.getWildcard(testObject, "a.e.*")).toEqual([1, 2, 3]);
+
+    // OR selector test
+    expect(_.getWildcard(testObject, "a.e|f")).toEqual([[1, 2, 3], true]);
+
+    // Exclusion selector test
+    expect(_.getWildcard(testObject, "a.*!e")).toEqual([
+        { "c": 1, "d": "test" },
+        true
+    ]);
   });
 
   test("setWildcard", () => {

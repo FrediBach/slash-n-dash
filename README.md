@@ -8,6 +8,20 @@ Path based extensions for Lodash
 
 `import _ from "slash-n-dash";`
 
+## Path Selectors
+
+- `*` - Matches any number of characters, except the null character.
+- `**` - Matches any number of characters, including the null character.
+- `*!` - Matches any number of characters, except the null character, and excludes the specified keys.
+- `|` - OR selector, matches any of the specified keys.
+
+### Examples
+
+- `a.*.c` - Matches a.b.c, a.b.d, a.e.0, a.e.1, a.e.2, a.f
+- `a.**` - Matches a, a.b, a.b.c, a.b.d, a.e, a.e.0, a.e.1, a.e.2, a.f
+- `a.*!e` - Matches a.b, a.f
+- `a.b|c` - Matches a.b, a.c
+
 ## Methods
 
 ### Array Operations
