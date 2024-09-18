@@ -8,7 +8,7 @@ import _ from "lodash";
  * @param {string|string[]} path - The path with potential wildcards.
  * @returns {string[]} An array of concrete paths.
  */
-const resolveWildcardPath = (object, path) => {
+_.resolveWildcardPath = (object, path) => {
   const parts = _.toPath(path);
   let current = [{ obj: object, path: "" }];
   const results = [];
@@ -86,7 +86,7 @@ const resolveWildcardPath = (object, path) => {
  * @returns {*} Returns the resolved value or an array of resolved values.
  */
 _.getWildcard = (object, path, defaultValue) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   if (paths.length === 1) {
     return _.get(object, paths[0], defaultValue);
   }
@@ -102,7 +102,7 @@ _.getWildcard = (object, path, defaultValue) => {
  * @returns {Object} Returns the modified object.
  */
 _.setWildcard = (object, path, value) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   paths.forEach(p => _.set(object, p, value));
   return object;
 };
@@ -114,7 +114,7 @@ _.setWildcard = (object, path, value) => {
  * @returns {Object} The modified object.
  */
 _.removeByPath = (object, path) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   paths.forEach(p => {
     const pathArray = _.toPath(p);
     const lastKey = pathArray.pop();
@@ -137,7 +137,7 @@ _.removeByPath = (object, path) => {
  * @throws {Error} If any resolved path does not lead to an array.
  */
 _.pushToArrayByPath = (object, path, value) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   paths.forEach(p => {
     const array = _.get(object, p);
     if (!Array.isArray(array)) {
@@ -156,7 +156,7 @@ _.pushToArrayByPath = (object, path, value) => {
  * @throws {Error} If any resolved path does not lead to an array.
  */
 _.popFromArrayByPath = (object, path) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   const poppedValues = paths.map(p => {
     const array = _.get(object, p);
     if (!Array.isArray(array)) {
@@ -177,7 +177,7 @@ _.popFromArrayByPath = (object, path) => {
  * @throws {Error} If any resolved path does not lead to an array.
  */
 _.unshiftToArrayByPath = (object, path, ...values) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   const newLengths = paths.map(p => {
     const array = _.get(object, p);
     if (!Array.isArray(array)) {
@@ -197,7 +197,7 @@ _.unshiftToArrayByPath = (object, path, ...values) => {
  * @throws {Error} If any resolved path does not lead to an array.
  */
 _.shiftFromArrayByPath = (object, path) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   const shiftedValues = paths.map(p => {
     const array = _.get(object, p);
     if (!Array.isArray(array)) {
@@ -922,7 +922,7 @@ _.findIndexByPath = (object, path, predicate) => {
  * @returns {Array} An array of values found at the paths.
  */
 _.getByWildcardPath = (object, path) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   return paths.map((p) => _.get(object, p));
 };
 
@@ -934,7 +934,7 @@ _.getByWildcardPath = (object, path) => {
  * @returns {Object} The modified object.
  */
 _.setByWildcardPath = (object, path, value) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   paths.forEach((p) => _.set(object, p, value));
   return object;
 };
@@ -946,7 +946,7 @@ _.setByWildcardPath = (object, path, value) => {
  * @returns {Object} The modified object.
  */
 _.removeByWildcardPath = (object, path) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   paths.forEach((p) => _.unset(object, p));
   return object;
 };
@@ -959,7 +959,7 @@ _.removeByWildcardPath = (object, path) => {
  * @returns {Object} The modified object.
  */
 _.incrementByWildcardPath = (object, path, amount = 1) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   paths.forEach((p) => {
     const currentValue = _.get(object, p);
     if (typeof currentValue === "number") {
@@ -976,7 +976,7 @@ _.incrementByWildcardPath = (object, path, amount = 1) => {
  * @returns {Object} The modified object.
  */
 _.toggleBooleanByWildcardPath = (object, path) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   paths.forEach((p) => {
     const currentValue = _.get(object, p);
     if (typeof currentValue === "boolean") {
@@ -993,7 +993,7 @@ _.toggleBooleanByWildcardPath = (object, path) => {
  * @returns {Array} An array of values found at the paths.
  */
 _.getByWildcardPath = (object, path) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   return paths.map((p) => _.get(object, p));
 };
 
@@ -1005,7 +1005,7 @@ _.getByWildcardPath = (object, path) => {
  * @returns {Object} The modified object.
  */
 _.setByWildcardPath = (object, path, value) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   paths.forEach((p) => _.set(object, p, value));
   return object;
 };
@@ -1017,7 +1017,7 @@ _.setByWildcardPath = (object, path, value) => {
  * @returns {Object} The modified object.
  */
 _.removeByWildcardPath = (object, path) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   paths.forEach((p) => _.unset(object, p));
   return object;
 };
@@ -1030,7 +1030,7 @@ _.removeByWildcardPath = (object, path) => {
  * @returns {Object} The modified object.
  */
 _.incrementByWildcardPath = (object, path, amount = 1) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   paths.forEach((p) => {
     const currentValue = _.get(object, p);
     if (typeof currentValue === "number") {
@@ -1047,7 +1047,7 @@ _.incrementByWildcardPath = (object, path, amount = 1) => {
  * @returns {Object} The modified object.
  */
 _.toggleBooleanByWildcardPath = (object, path) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   paths.forEach((p) => {
     const currentValue = _.get(object, p);
     if (typeof currentValue === "boolean") {
@@ -1157,7 +1157,7 @@ _.zipObjectByPath = (object, keysPath, valuesPath) => {
  * @returns {Array} An array of values found at the paths.
  */
 _.getWildcard = (object, path, defaultValue) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   if (paths.length === 1) {
     return _.get(object, paths[0], defaultValue);
   }
@@ -1172,7 +1172,7 @@ _.getWildcard = (object, path, defaultValue) => {
  * @returns {Object} The modified object.
  */
 _.setWildcard = (object, path, value) => {
-  const paths = resolveWildcardPath(object, path);
+  const paths = _.resolveWildcardPath(object, path);
   paths.forEach(p => _.set(object, p, value));
   return object;
 };

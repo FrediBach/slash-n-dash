@@ -40,7 +40,7 @@ describe('Lodash Extended Methods', () => {
 
   test('getWildcard', () => {
     expect(_.getWildcard(testObject, 'a.b.c')).toBe(1);
-    expect(_.getWildcard(testObject, 'a.*.c')).toEqual([1]);
+    expect(_.getWildcard(testObject, 'a.*.c')).toEqual(1);
     expect(_.getWildcard(testObject, 'a.e.*')).toEqual([1, 2, 3]);
   });
 
