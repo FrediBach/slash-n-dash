@@ -432,21 +432,6 @@ _.omitByPath = (object, path, keys) => {
 };
 
 /**
- * Deep freezes an object at the specified path.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the object to freeze.
- * @returns {Object} The modified object.
- * @throws {Error} If the value at the path is not an object.
- */
-_.deepFreezeByPath = (object, path) => {
-  const targetObject = _.get(object, path);
-  if (!_.isObject(targetObject)) {
-    throw new Error(`Value at path ${path} is not an object`);
-  }
-  return _.set(object, path, _.cloneDeep(targetObject));
-};
-
-/**
  * Sets a default value at the specified path if it doesn't exist.
  * @param {Object} object - The object to modify.
  * @param {string|string[]} path - The path to set the default value.
@@ -504,50 +489,14 @@ _.countPropertiesByPath = (object, path) => {
 };
 
 /**
- * Flattens an object at the specified path.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the object to flatten.
- * @returns {Object} The flattened object.
- * @throws {Error} If the value at the path is not an object.
- */
-_.flattenObjectByPath = (object, path) => {
-  const targetObject = _.get(object, path);
-  if (!_.isObject(targetObject)) {
-    throw new Error(`Value at path ${path} is not an object`);
-  }
-  const flatten = (obj, prefix = "") => {
-    return Object.keys(obj).reduce((acc, k) => {
-      const pre = prefix.length ? prefix + "." : "";
-      if (
-        typeof obj[k] === "object" &&
-        obj[k] !== null &&
-        !Array.isArray(obj[k])
-      ) {
-        Object.assign(acc, flatten(obj[k], pre + k));
-      } else {
-        acc[pre + k] = obj[k];
-      }
-      return acc;
-    }, {});
-  };
-  const flattenedObject = flatten(targetObject);
-  const result = {};
-  Object.keys(flattenedObject).forEach((key) => {
-    result[path + "." + key] = flattenedObject[key];
-  });
-  return result;
-};
-
-/**
  * Unflattens an object at the specified path.
  * @param {Object} object - The object to modify.
  * @param {string|string[]} path - The path to the object to unflatten.
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not an object.
  */
-_.unflattenObjectByPath = (object, path) => {
-  const targetObject = _.get(object, path);
-  if (!_.isObject(targetObject)) {
+_.unflattenObjectByPath = (object, path, flatObject) => {
+  if (!_.isObject(flatObject)) {
     throw new Error(`Value at path ${path} is not an object`);
   }
   const unflatten = (obj) => {
@@ -565,7 +514,7 @@ _.unflattenObjectByPath = (object, path) => {
     }
     return result;
   };
-  const unflattenedObject = unflatten(targetObject);
+  const unflattenedObject = unflatten(flatObject);
   return _.set(object, path, unflattenedObject);
 };
 
@@ -633,22 +582,29 @@ _.sortObjectKeysByPath = (object, path, comparator) => {
 };
 
 /**
- * Sorts the values of an object at the specified path using a comparator function.
+ * Sorts an array or object values at the specified path using a comparator function.
  * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the object to sort values.
- * @param {Function} comparator - The comparator function to use for sorting values.
+ * @param {string|string[]} path - The path to the array or object to sort.
+ * @param {Function} comparator - The comparator function to use for sorting.
  * @returns {Object} The modified object.
- * @throws {Error} If the value at the path is not an object.
+ * @throws {Error} If the value at the path is neither an array nor an object.
  */
 _.sortObjectValuesByPath = (object, path, comparator) => {
-  const targetObject = _.get(object, path);
-  if (!_.isObject(targetObject)) {
-    throw new Error(`Value at path ${path} is not an object`);
+  const value = _.get(object, path);
+  
+  if (Array.isArray(value)) {
+    // If it's an array, sort it directly
+    const sortedArray = [...value].sort(comparator);
+    return _.set(object, path, sortedArray);
+  } else if (_.isObject(value)) {
+    // If it's an object, sort its values
+    const entries = Object.entries(value);
+    entries.sort((a, b) => comparator(a[1], b[1]));
+    const sortedObject = Object.fromEntries(entries);
+    return _.set(object, path, sortedObject);
+  } else {
+    throw new Error(`Value at path ${path} is neither an array nor an object`);
   }
-  const entries = Object.entries(targetObject);
-  entries.sort((a, b) => comparator(a[1], b[1]));
-  const sortedObject = Object.fromEntries(entries);
-  return _.set(object, path, sortedObject);
 };
 
 /**
@@ -1174,6 +1130,70 @@ _.getWildcard = (object, path, defaultValue) => {
 _.setWildcard = (object, path, value) => {
   const paths = _.resolveWildcardPath(object, path);
   paths.forEach(p => _.set(object, p, value));
+  return object;
+};
+
+/**
+ * Deep freezes an object at the specified path.
+ * @param {Object} object - The object to modify.
+ * @param {string|string[]} path - The path to the object to freeze.
+ * @returns {Object} The modified object.
+ * @throws {Error} If the value at the path is not an object.
+ */
+_.deepFreezeByPath = (object, path) => {
+  const targetObject = _.get(object, path);
+  if (!_.isObject(targetObject)) {
+    throw new Error(`Value at path ${path} is not an object`);
+  }
+  
+  const deepFreeze = (obj) => {
+    Object.keys(obj).forEach(prop => {
+      if (typeof obj[prop] === 'object' && !Object.isFrozen(obj[prop])) 
+        deepFreeze(obj[prop]);
+    });
+    return Object.freeze(obj);
+  };
+  
+  return _.set(object, path, deepFreeze(targetObject));
+};
+
+/**
+ * Flattens an object at the specified path.
+ * @param {Object} object - The object to modify.
+ * @param {string|string[]} path - The path to the object to flatten.
+ * @returns {Object} The modified object with the specified path flattened.
+ * @throws {Error} If the value at the path is not an object.
+ */
+_.flattenObjectByPath = (object, path) => {
+  const targetObject = _.get(object, path);
+  if (!_.isObject(targetObject)) {
+    throw new Error(`Value at path ${path} is not an object`);
+  }
+  
+  const flatten = (obj, prefix = "") => {
+    return Object.keys(obj).reduce((acc, k) => {
+      const pre = prefix.length ? prefix + "." : "";
+      if (
+        typeof obj[k] === "object" &&
+        obj[k] !== null &&
+        !Array.isArray(obj[k])
+      ) {
+        Object.assign(acc, flatten(obj[k], pre + k));
+      } else {
+        acc[pre + k] = obj[k];
+      }
+      return acc;
+    }, {});
+  };
+
+  const flattenedObject = flatten(targetObject);
+  
+  // Remove the original nested object
+  _.unset(object, path);
+
+  // Set the flattened key-value pairs
+  _.set(object, path, flattenedObject);
+
   return object;
 };
 
