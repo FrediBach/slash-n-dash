@@ -2,6 +2,39 @@
 
 Path based extensions for Lodash, for all that love directly manipulating objects and arrays by path. Allows doing stuff like:
 
+```js
+import _ from "slash-n-dash";
+
+const testObject = {
+  products: [
+    {
+      id: "1234",
+      name: "Product XY"
+    },
+    {
+      id: "1235",
+      name: "Product Z"
+    },
+  ],
+  categories: [
+    {
+        id: "123",
+        label: "Category A"
+    }
+  ],
+  users: [
+    {
+        id: "987",
+        name: "John Doe"
+    }
+  ]
+};
+
+// Renames all name and label properties to title, except in the users array:
+_.renameKeyByPath(testObject, "*!users[*].name|label", "title");
+
+```
+
 ## Usage
 
 `npm i slash-n-dash`
