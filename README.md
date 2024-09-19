@@ -1,6 +1,6 @@
 # slash-n-dash
 
-Path based extensions for Lodash
+Path based extensions for Lodash, for all that love directly manipulating objects and arrays by path. Allows doing stuff like:
 
 ## Usage
 
@@ -10,17 +10,17 @@ Path based extensions for Lodash
 
 ## Path Selectors
 
-- `*` - Matches any number of characters, except the null character.
-- `**` - Matches any number of characters, including the null character.
-- `*!` - Matches any number of characters, except the null character, and excludes the specified keys.
+- `*` - Matches any number of characters in one path part
+- `**` - Matches any number of characters in one or more path parts
+- `*!` - Excludes the specified keys from a path part
 - `|` - OR selector, matches any of the specified keys.
 
 ### Examples
 
-- `a.*.c` - Matches a.b.c, a.b.d, a.e.0, a.e.1, a.e.2, a.f
-- `a.**` - Matches a, a.b, a.b.c, a.b.d, a.e, a.e.0, a.e.1, a.e.2, a.f
-- `a.*!e` - Matches a.b, a.f
-- `a.b|c` - Matches a.b, a.c
+- `a.*.c` - Matches a.a.c, a.b.c, a.c.c ...
+- `a.**` - Matches a, a.a, a.b, a.b.a ... basically anything under a.
+- `a.*!b` - Matches a.a, a.c ... anything under a that isn't a.b
+- `a.b|c` - Matches a.b, a.c ... so only the path parts listed in the selector are matched
 
 ## Methods
 

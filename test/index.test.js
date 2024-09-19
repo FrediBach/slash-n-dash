@@ -125,7 +125,7 @@ describe("Lodash Extended Methods", () => {
 
   test("removeAtIndexByPath", () => {
     const result = _.removeAtIndexByPath(testObject, "a.e", 1);
-    expect(result.removedValue).toBe(2);
+    expect(result.removedValues).toEqual([2]);
     expect(testObject.a.e).toEqual([1, 3]);
 
     expect(() => _.removeAtIndexByPath(testObject, "a.b", 0)).toThrow();
