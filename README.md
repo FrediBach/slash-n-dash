@@ -47,7 +47,11 @@ _.renameKeyByPath(testObject, "*!users[*].name|label", "title");
 - `**` - Matches any number of characters in one or more path parts
 - `*!` - Excludes the specified keys from a path part
 - `|` - OR selector, matches any of the specified keys.
-
+- `[*]` - Matches every array element
+- `[0-9]` - Matches the first ten array elements
+- `[!0]` - Matches all but the first array element
+- `[0|1]` - Matches the first and second array elements
+- `[type=reply]` - Matches all array elements where the object has a type property with the value "reply"
 ### Examples
 
 - `a.*.c` - Matches a.a.c, a.b.c, a.c.c ...

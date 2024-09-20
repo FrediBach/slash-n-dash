@@ -25,6 +25,25 @@ _.resolveWildcardPath = (object, path) => {
     return paths;
   };
 
+  const processArrayWildcard = (arr, wildcard, path) => {
+    if (wildcard === '*') {
+      return arr.map((_, index) => ({ obj: arr[index], path: `${path}[${index}]` }));
+    } else if (wildcard.includes('-')) {
+      const [start, end] = wildcard.split('-').map(Number);
+      return arr.slice(start, end + 1).map((_, index) => ({ obj: arr[start + index], path: `${path}[${start + index}]` }));
+    } else if (wildcard.startsWith('!')) {
+      const excludeIndex = Number(wildcard.slice(1));
+      return arr.filter((_, index) => index !== excludeIndex).map((item, index) => ({ obj: item, path: `${path}[${index}]` }));
+    } else if (wildcard.includes('|')) {
+      const indices = wildcard.split('|').map(Number);
+      return indices.map(index => ({ obj: arr[index], path: `${path}[${index}]` })).filter(({ obj }) => obj !== undefined);
+    } else if (wildcard.includes('=')) {
+      const [key, value] = wildcard.split('=');
+      return arr.filter(item => item[key] === value).map((item, index) => ({ obj: item, path: `${path}[${index}]` }));
+    }
+    return [];
+  };
+
   parts.forEach((part, index) => {
     if (part === "**") {
       current = current.flatMap(({ obj, path }) => traverseDeep(obj, path));
@@ -36,6 +55,11 @@ _.resolveWildcardPath = (object, path) => {
               path: path ? `${path}.${key}` : key,
             }))
           : []
+      );
+    } else if (part.startsWith('[') && part.endsWith(']')) {
+      const wildcard = part.slice(1, -1);
+      current = current.flatMap(({ obj, path }) =>
+        Array.isArray(obj) ? processArrayWildcard(obj, wildcard, path) : []
       );
     } else if (part.includes("*!")) {
       const [wildcard, excludedKeysString] = part.split("!");
