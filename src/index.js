@@ -2,13 +2,16 @@ import _ from "lodash";
 
 // New Lodash Path Methods:
 
+// Path methods namespace:
+_.path = {};
+
 /**
  * Resolves a wildcard path to multiple concrete paths.
  * @param {Object} object - The object to traverse.
  * @param {string|string[]} path - The path with potential wildcards.
  * @returns {string[]} An array of concrete paths.
  */
-_.resolveWildcardPath = (object, path) => {
+_.path.resolve = (object, path) => {
   const parts = _.toPath(path);
   let current = [{ obj: object, path: "" }];
   const results = [];
@@ -109,8 +112,8 @@ _.resolveWildcardPath = (object, path) => {
  * @param {*} [defaultValue] The value returned for undefined resolved values.
  * @returns {*} Returns the resolved value or an array of resolved values.
  */
-_.getWildcard = (object, path, defaultValue) => {
-  const paths = _.resolveWildcardPath(object, path);
+_.path.get = (object, path, defaultValue) => {
+  const paths = _.path.resolve(object, path);
   if (paths.length === 1) {
     return _.get(object, paths[0], defaultValue);
   }
@@ -125,8 +128,8 @@ _.getWildcard = (object, path, defaultValue) => {
  * @param {*} value The value to set.
  * @returns {Object} Returns the modified object.
  */
-_.setWildcard = (object, path, value) => {
-  const paths = _.resolveWildcardPath(object, path);
+_.path.set = (object, path, value) => {
+  const paths = _.path.resolve(object, path);
   paths.forEach(p => _.set(object, p, value));
   return object;
 };
@@ -137,8 +140,8 @@ _.setWildcard = (object, path, value) => {
  * @param {string|string[]} path - The path of the property to remove, supporting wildcards.
  * @returns {Object} The modified object.
  */
-_.removeByPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
+_.path.remove = (object, path) => {
+  const paths = _.path.resolve(object, path);
   paths.forEach(p => {
     const pathArray = _.toPath(p);
     const lastKey = pathArray.pop();
@@ -160,8 +163,8 @@ _.removeByPath = (object, path) => {
  * @returns {Object} The modified object.
  * @throws {Error} If any resolved path does not lead to an array.
  */
-_.pushToArrayByPath = (object, path, value) => {
-  const paths = _.resolveWildcardPath(object, path);
+_.path.push = (object, path, value) => {
+  const paths = _.path.resolve(object, path);
   paths.forEach(p => {
     const array = _.get(object, p);
     if (!Array.isArray(array)) {
@@ -179,8 +182,8 @@ _.pushToArrayByPath = (object, path, value) => {
  * @returns {*|Array} The popped value or an array of popped values if multiple arrays are affected.
  * @throws {Error} If any resolved path does not lead to an array.
  */
-_.popFromArrayByPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
+_.path.pop = (object, path) => {
+  const paths = _.path.resolve(object, path);
   const poppedValues = paths.map(p => {
     const array = _.get(object, p);
     if (!Array.isArray(array)) {
@@ -200,8 +203,8 @@ _.popFromArrayByPath = (object, path) => {
  * @returns {number|number[]} The new length of the array, or an array of new lengths if multiple arrays are affected.
  * @throws {Error} If any resolved path does not lead to an array.
  */
-_.unshiftToArrayByPath = (object, path, ...values) => {
-  const paths = _.resolveWildcardPath(object, path);
+_.path.unshift = (object, path, ...values) => {
+  const paths = _.path.resolve(object, path);
   const newLengths = paths.map(p => {
     const array = _.get(object, p);
     if (!Array.isArray(array)) {
@@ -220,8 +223,8 @@ _.unshiftToArrayByPath = (object, path, ...values) => {
  * @returns {*|Array} The shifted value or an array of shifted values if multiple arrays are affected.
  * @throws {Error} If any resolved path does not lead to an array.
  */
-_.shiftFromArrayByPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
+_.path.shift = (object, path) => {
+  const paths = _.path.resolve(object, path);
   const shiftedValues = paths.map(p => {
     const array = _.get(object, p);
     if (!Array.isArray(array)) {
@@ -242,8 +245,8 @@ _.shiftFromArrayByPath = (object, path) => {
  * @returns {Object} The modified object.
  * @throws {Error} If any resolved path does not lead to an array.
  */
-_.insertAtIndexByPath = (object, path, value, index) => {
-  const paths = _.resolveWildcardPath(object, path);
+_.path.insertAtIndex = (object, path, value, index) => {
+  const paths = _.path.resolve(object, path);
   paths.forEach(p => {
     const array = _.get(object, p);
     if (Array.isArray(array)) {
@@ -264,8 +267,8 @@ _.insertAtIndexByPath = (object, path, value, index) => {
  * @returns {{object: Object, removedValues: Array}} The modified object and an array of removed values.
  * @throws {Error} If any resolved path does not lead to an array.
  */
-_.removeAtIndexByPath = (object, path, index) => {
-  const paths = _.resolveWildcardPath(object, path);
+_.path.removeAtIndex = (object, path, index) => {
+  const paths = _.path.resolve(object, path);
   const removedValues = [];
 
   paths.forEach(p => {
@@ -290,23 +293,8 @@ _.removeAtIndexByPath = (object, path, index) => {
  * @param {string|string[]} path - The path to check.
  * @returns {boolean} True if the path has a value, false otherwise.
  */
-_.hasPathValue = (object, path) => {
+_.path.hasValue = (object, path) => {
   return _.get(object, path) !== undefined;
-};
-
-/**
- * Toggles a boolean value at the specified path.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the boolean value.
- * @returns {Object} The modified object.
- * @throws {Error} If the value at the path is not a boolean.
- */
-_.toggleBooleanByPath = (object, path) => {
-  const currentValue = _.get(object, path);
-  if (!_.isBoolean(currentValue)) {
-    throw new Error(`Value at path ${path} is not a boolean`);
-  }
-  return _.set(object, path, !currentValue);
 };
 
 /**
@@ -316,26 +304,10 @@ _.toggleBooleanByPath = (object, path) => {
  * @param {Object} sourceObject - The object to merge.
  * @returns {Object} The modified object.
  */
-_.mergeByPath = (object, path, sourceObject) => {
+_.path.merge = (object, path, sourceObject) => {
   const targetObject = _.get(object, path) || {};
   const mergedObject = _.merge({}, targetObject, sourceObject);
   return _.set(object, path, mergedObject);
-};
-
-/**
- * Increments a number at the specified path.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the number.
- * @param {number} [amount=1] - The amount to increment by.
- * @returns {Object} The modified object.
- * @throws {Error} If the value at the path is not a number.
- */
-_.incrementByPath = (object, path, amount = 1) => {
-  const currentValue = _.get(object, path);
-  if (typeof currentValue !== "number") {
-    throw new Error(`Value at path ${path} is not a number`);
-  }
-  return _.set(object, path, currentValue + amount);
 };
 
 /**
@@ -346,7 +318,7 @@ _.incrementByPath = (object, path, amount = 1) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not a number.
  */
-_.decrementByPath = (object, path, amount = 1) => {
+_.path.decrement = (object, path, amount = 1) => {
   const currentValue = _.get(object, path);
   if (typeof currentValue !== "number") {
     throw new Error(`Value at path ${path} is not a number`);
@@ -362,7 +334,7 @@ _.decrementByPath = (object, path, amount = 1) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not a string.
  */
-_.appendStringByPath = (object, path, string) => {
+_.path.appendString = (object, path, string) => {
   const currentValue = _.get(object, path);
   if (typeof currentValue !== "string") {
     throw new Error(`Value at path ${path} is not a string`);
@@ -378,7 +350,7 @@ _.appendStringByPath = (object, path, string) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the parent at the path is not an object or the key doesn't exist.
  */
-_.renameKeyByPath = (object, path, newKey) => {
+_.path.renameKey = (object, path, newKey) => {
   const parentPath = path.split(".").slice(0, -1).join(".");
   const oldKey = path.split(".").pop();
   const parentObject = _.get(object, parentPath);
@@ -407,7 +379,7 @@ _.renameKeyByPath = (object, path, newKey) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not an object.
  */
-_.filterObjectByPath = (object, path, predicate) => {
+_.path.filterObject = (object, path, predicate) => {
   const targetObject = _.get(object, path);
   if (!_.isObject(targetObject)) {
     throw new Error(`Value at path ${path} is not an object`);
@@ -424,7 +396,7 @@ _.filterObjectByPath = (object, path, predicate) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not an object.
  */
-_.mapObjectByPath = (object, path, mapper) => {
+_.path.mapObject = (object, path, mapper) => {
   const targetObject = _.get(object, path);
   if (!_.isObject(targetObject)) {
     throw new Error(`Value at path ${path} is not an object`);
@@ -441,7 +413,7 @@ _.mapObjectByPath = (object, path, mapper) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not an object.
  */
-_.pickByPath = (object, path, keys) => {
+_.path.pick = (object, path, keys) => {
   const targetObject = _.get(object, path);
   if (!_.isObject(targetObject)) {
     throw new Error(`Value at path ${path} is not an object`);
@@ -458,7 +430,7 @@ _.pickByPath = (object, path, keys) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not an object.
  */
-_.omitByPath = (object, path, keys) => {
+_.path.omit = (object, path, keys) => {
   const targetObject = _.get(object, path);
   if (!_.isObject(targetObject)) {
     throw new Error(`Value at path ${path} is not an object`);
@@ -474,8 +446,8 @@ _.omitByPath = (object, path, keys) => {
  * @param {*} defaultValue - The default value to set.
  * @returns {Object} The modified object.
  */
-_.setDefaultByPath = (object, path, defaultValue) => {
-  if (!_.hasPathValue(object, path)) {
+_.path.setDefault = (object, path, defaultValue) => {
+  if (!_.path.hasValue(object, path)) {
     return _.set(object, path, defaultValue);
   }
   return object;
@@ -490,7 +462,7 @@ _.setDefaultByPath = (object, path, defaultValue) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not an object or neither property exists.
  */
-_.togglePropertyByPath = (object, path, prop1, prop2) => {
+_.path.toggleProperty = (object, path, prop1, prop2) => {
   const targetObject = _.get(object, path);
   if (!_.isObject(targetObject)) {
     throw new Error(`Value at path ${path} is not an object`);
@@ -516,7 +488,7 @@ _.togglePropertyByPath = (object, path, prop1, prop2) => {
  * @returns {number} The number of properties.
  * @throws {Error} If the value at the path is not an object.
  */
-_.countPropertiesByPath = (object, path) => {
+_.path.countProperties = (object, path) => {
   const targetObject = _.get(object, path);
   if (!_.isObject(targetObject)) {
     throw new Error(`Value at path ${path} is not an object`);
@@ -531,7 +503,7 @@ _.countPropertiesByPath = (object, path) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not an object.
  */
-_.unflattenObjectByPath = (object, path, flatObject) => {
+_.path.unflatten = (object, path, flatObject) => {
   if (!_.isObject(flatObject)) {
     throw new Error(`Value at path ${path} is not an object`);
   }
@@ -562,7 +534,7 @@ _.unflattenObjectByPath = (object, path, flatObject) => {
  * @returns {Object} The modified object.
  * @throws {Error} If both paths do not exist in the object.
  */
-_.swapValuesByPath = (object, path1, path2) => {
+_.path.swapValues = (object, path1, path2) => {
   const value1 = _.get(object, path1);
   const value2 = _.get(object, path2);
 
@@ -587,7 +559,7 @@ _.swapValuesByPath = (object, path1, path2) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the path does not lead to an array.
  */
-_.sortArrayByPath = (object, path, comparator) => {
+_.path.sortArray = (object, path, comparator) => {
   const array = _.get(object, path);
   if (!Array.isArray(array)) {
     throw new Error(`Path ${path} does not lead to an array`);
@@ -604,7 +576,7 @@ _.sortArrayByPath = (object, path, comparator) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not an object.
  */
-_.sortObjectKeysByPath = (object, path, comparator) => {
+_.path.sortObjectKeys = (object, path, comparator) => {
   const targetObject = _.get(object, path);
   if (!_.isObject(targetObject)) {
     throw new Error(`Value at path ${path} is not an object`);
@@ -625,7 +597,7 @@ _.sortObjectKeysByPath = (object, path, comparator) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is neither an array nor an object.
  */
-_.sortObjectValuesByPath = (object, path, comparator) => {
+_.path.sortObjectValues = (object, path, comparator) => {
   const value = _.get(object, path);
   
   if (Array.isArray(value)) {
@@ -650,7 +622,7 @@ _.sortObjectValuesByPath = (object, path, comparator) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is neither an array nor a string.
  */
-_.reverseByPath = (object, path) => {
+_.path.reverse = (object, path) => {
   const value = _.get(object, path);
   if (Array.isArray(value)) {
     return _.set(object, path, value.slice().reverse());
@@ -667,7 +639,7 @@ _.reverseByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {string} The type of the value.
  */
-_.typeOfByPath = (object, path) => {
+_.path.typeOf = (object, path) => {
   const value = _.get(object, path);
   return typeof value;
 };
@@ -678,7 +650,7 @@ _.typeOfByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {boolean} True if the value is an array, false otherwise.
  */
-_.isArrayByPath = (object, path) => {
+_.path.isArray = (object, path) => {
   return Array.isArray(_.get(object, path));
 };
 
@@ -688,7 +660,7 @@ _.isArrayByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {Object} The modified object.
  */
-_.toIntByPath = (object, path) => {
+_.path.toInt = (object, path) => {
   const value = _.get(object, path);
   return _.set(object, path, parseInt(value, 10));
 };
@@ -699,7 +671,7 @@ _.toIntByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {Object} The modified object.
  */
-_.toFloatByPath = (object, path) => {
+_.path.toFloat = (object, path) => {
   const value = _.get(object, path);
   return _.set(object, path, parseFloat(value));
 };
@@ -710,7 +682,7 @@ _.toFloatByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {boolean} True if the value is a number, false otherwise.
  */
-_.isNumberByPath = (object, path) => {
+_.path.isNumber = (object, path) => {
   return _.isNumber(_.get(object, path));
 };
 
@@ -720,7 +692,7 @@ _.isNumberByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {boolean} True if the value is a string, false otherwise.
  */
-_.isStringByPath = (object, path) => {
+_.path.isString = (object, path) => {
   return _.isString(_.get(object, path));
 };
 
@@ -730,7 +702,7 @@ _.isStringByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {boolean} True if the value is an object, false otherwise.
  */
-_.isObjectByPath = (object, path) => {
+_.path.isObject = (object, path) => {
   return _.isObject(_.get(object, path));
 };
 
@@ -740,7 +712,7 @@ _.isObjectByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {boolean} True if the value is null or undefined, false otherwise.
  */
-_.isNilByPath = (object, path) => {
+_.path.isNil = (object, path) => {
   return _.isNil(_.get(object, path));
 };
 
@@ -750,7 +722,7 @@ _.isNilByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {Object} The modified object.
  */
-_.toBooleanByPath = (object, path) => {
+_.path.toBoolean = (object, path) => {
   const value = _.get(object, path);
   return _.set(object, path, Boolean(value));
 };
@@ -761,7 +733,7 @@ _.toBooleanByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {number} The length of the value, or 0 if not applicable.
  */
-_.getLengthByPath = (object, path) => {
+_.path.getLength = (object, path) => {
   const value = _.get(object, path);
   return value && value.length ? value.length : 0;
 };
@@ -772,7 +744,7 @@ _.getLengthByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {boolean} True if the value is empty, false otherwise.
  */
-_.isEmptyByPath = (object, path) => {
+_.path.isEmpty = (object, path) => {
   return _.isEmpty(_.get(object, path));
 };
 
@@ -783,7 +755,7 @@ _.isEmptyByPath = (object, path) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not a string.
  */
-_.trimByPath = (object, path) => {
+_.path.trim = (object, path) => {
   const value = _.get(object, path);
   if (!_.isString(value)) {
     throw new Error(`Value at path ${path} is not a string`);
@@ -798,7 +770,7 @@ _.trimByPath = (object, path) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not a string.
  */
-_.toUpperCaseByPath = (object, path) => {
+_.path.toUpperCase = (object, path) => {
   const value = _.get(object, path);
   if (!_.isString(value)) {
     throw new Error(`Value at path ${path} is not a string`);
@@ -813,7 +785,7 @@ _.toUpperCaseByPath = (object, path) => {
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not a string.
  */
-_.toLowerCaseByPath = (object, path) => {
+_.path.toLowerCase = (object, path) => {
   const value = _.get(object, path);
   if (!_.isString(value)) {
     throw new Error(`Value at path ${path} is not a string`);
@@ -827,7 +799,7 @@ _.toLowerCaseByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {boolean} True if the value is a function, false otherwise.
  */
-_.isFunctionByPath = (object, path) => {
+_.path.isFunction = (object, path) => {
   return _.isFunction(_.get(object, path));
 };
 
@@ -837,7 +809,7 @@ _.isFunctionByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value.
  * @returns {boolean} True if the value is a Date object, false otherwise.
  */
-_.isDateByPath = (object, path) => {
+_.path.isDate = (object, path) => {
   return _.isDate(_.get(object, path));
 };
 
@@ -847,7 +819,7 @@ _.isDateByPath = (object, path) => {
  * @param {string|string[]} path - The path to the value to clone.
  * @returns {*} The deep cloned value.
  */
-_.cloneDeepByPath = (object, path) => {
+_.path.cloneDeep = (object, path) => {
   return _.cloneDeep(_.get(object, path));
 };
 
@@ -858,7 +830,7 @@ _.cloneDeepByPath = (object, path) => {
  * @param {string|string[]} path2 - The second path.
  * @returns {boolean} True if the values are equal, false otherwise.
  */
-_.isEqualByPath = (object, path1, path2) => {
+_.path.isEqual = (object, path1, path2) => {
   return _.isEqual(_.get(object, path1), _.get(object, path2));
 };
 
@@ -869,7 +841,7 @@ _.isEqualByPath = (object, path1, path2) => {
  * @param {Object} defaults - The default properties to assign.
  * @returns {Object} The modified object.
  */
-_.defaultsDeepByPath = (object, path, defaults) => {
+_.path.defaultsDeep = (object, path, defaults) => {
   const current = _.get(object, path, {});
   const result = _.defaultsDeep({}, current, defaults);
   return _.set(object, path, result);
@@ -883,7 +855,7 @@ _.defaultsDeepByPath = (object, path, defaults) => {
  * @returns {*} Returns the matched element, else undefined.
  * @throws {Error} If the path does not lead to an array.
  */
-_.findByPath = (object, path, predicate) => {
+_.path.find = (object, path, predicate) => {
   const array = _.get(object, path);
   if (!Array.isArray(array)) {
     throw new Error(`Path ${path} does not lead to an array`);
@@ -899,7 +871,7 @@ _.findByPath = (object, path, predicate) => {
  * @returns {number} Returns the index of the found element, else -1.
  * @throws {Error} If the path does not lead to an array.
  */
-_.findIndexByPath = (object, path, predicate) => {
+_.path.findIndex = (object, path, predicate) => {
   const array = _.get(object, path);
   if (!Array.isArray(array)) {
     throw new Error(`Path ${path} does not lead to an array`);
@@ -908,50 +880,14 @@ _.findIndexByPath = (object, path, predicate) => {
 };
 
 /**
- * Gets values at the specified path, supporting wildcards.
- * @param {Object} object - The object to query.
- * @param {string|string[]} path - The path to get, supporting wildcards.
- * @returns {Array} An array of values found at the paths.
- */
-_.getByWildcardPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
-  return paths.map((p) => _.get(object, p));
-};
-
-/**
- * Sets values at the specified path, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to set, supporting wildcards.
- * @param {*} value - The value to set.
- * @returns {Object} The modified object.
- */
-_.setByWildcardPath = (object, path, value) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => _.set(object, p, value));
-  return object;
-};
-
-/**
- * Removes properties at the specified path, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to remove, supporting wildcards.
- * @returns {Object} The modified object.
- */
-_.removeByWildcardPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => _.unset(object, p));
-  return object;
-};
-
-/**
  * Increments numbers at the specified paths, supporting wildcards.
  * @param {Object} object - The object to modify.
  * @param {string|string[]} path - The path to the numbers, supporting wildcards.
  * @param {number} [amount=1] - The amount to increment by.
  * @returns {Object} The modified object.
  */
-_.incrementByWildcardPath = (object, path, amount = 1) => {
-  const paths = _.resolveWildcardPath(object, path);
+_.path.increment = (object, path, amount = 1) => {
+  const paths = _.path.resolve(object, path);
   paths.forEach((p) => {
     const currentValue = _.get(object, p);
     if (typeof currentValue === "number") {
@@ -967,79 +903,8 @@ _.incrementByWildcardPath = (object, path, amount = 1) => {
  * @param {string|string[]} path - The path to the boolean values, supporting wildcards.
  * @returns {Object} The modified object.
  */
-_.toggleBooleanByWildcardPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => {
-    const currentValue = _.get(object, p);
-    if (typeof currentValue === "boolean") {
-      _.set(object, p, !currentValue);
-    }
-  });
-  return object;
-};
-
-/**
- * Gets values at the specified path, supporting wildcards.
- * @param {Object} object - The object to query.
- * @param {string|string[]} path - The path to get, supporting wildcards.
- * @returns {Array} An array of values found at the paths.
- */
-_.getByWildcardPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
-  return paths.map((p) => _.get(object, p));
-};
-
-/**
- * Sets values at the specified path, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to set, supporting wildcards.
- * @param {*} value - The value to set.
- * @returns {Object} The modified object.
- */
-_.setByWildcardPath = (object, path, value) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => _.set(object, p, value));
-  return object;
-};
-
-/**
- * Removes properties at the specified path, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to remove, supporting wildcards.
- * @returns {Object} The modified object.
- */
-_.removeByWildcardPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => _.unset(object, p));
-  return object;
-};
-
-/**
- * Increments numbers at the specified paths, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the numbers, supporting wildcards.
- * @param {number} [amount=1] - The amount to increment by.
- * @returns {Object} The modified object.
- */
-_.incrementByWildcardPath = (object, path, amount = 1) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => {
-    const currentValue = _.get(object, p);
-    if (typeof currentValue === "number") {
-      _.set(object, p, currentValue + amount);
-    }
-  });
-  return object;
-};
-
-/**
- * Toggles boolean values at the specified paths, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the boolean values, supporting wildcards.
- * @returns {Object} The modified object.
- */
-_.toggleBooleanByWildcardPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
+_.path.toggleBoolean = (object, path) => {
+  const paths = _.path.resolve(object, path);
   paths.forEach((p) => {
     const currentValue = _.get(object, p);
     if (typeof currentValue === "boolean") {
@@ -1056,7 +921,7 @@ _.toggleBooleanByWildcardPath = (object, path) => {
  * @returns {Array} Returns the new duplicate free array.
  * @throws {Error} If the path does not lead to an array.
  */
-_.uniqueByPath = (object, path) => {
+_.path.unique = (object, path) => {
   const array = _.get(object, path);
   if (!Array.isArray(array)) {
     throw new Error(`Path ${path} does not lead to an array`);
@@ -1072,7 +937,7 @@ _.uniqueByPath = (object, path) => {
  * @returns {Object} Returns the composed aggregate object.
  * @throws {Error} If the path does not lead to an array.
  */
-_.groupByPath = (object, path, iteratee) => {
+_.path.group = (object, path, iteratee) => {
   const array = _.get(object, path);
   if (!Array.isArray(array)) {
     throw new Error(`Path ${path} does not lead to an array`);
@@ -1087,7 +952,7 @@ _.groupByPath = (object, path, iteratee) => {
  * @returns {number} Returns the sum.
  * @throws {Error} If the path does not lead to an array.
  */
-_.sumByPath = (object, path) => {
+_.path.sum = (object, path) => {
   const array = _.get(object, path);
   if (!Array.isArray(array)) {
     throw new Error(`Path ${path} does not lead to an array`);
@@ -1102,7 +967,7 @@ _.sumByPath = (object, path) => {
  * @returns {*} Returns the maximum value.
  * @throws {Error} If the path does not lead to an array.
  */
-_.maxByPath = (object, path) => {
+_.path.max = (object, path) => {
   const array = _.get(object, path);
   if (!Array.isArray(array)) {
     throw new Error(`Path ${path} does not lead to an array`);
@@ -1117,7 +982,7 @@ _.maxByPath = (object, path) => {
  * @returns {*} Returns the minimum value.
  * @throws {Error} If the path does not lead to an array.
  */
-_.minByPath = (object, path) => {
+_.path.min = (object, path) => {
   const array = _.get(object, path);
   if (!Array.isArray(array)) {
     throw new Error(`Path ${path} does not lead to an array`);
@@ -1133,7 +998,7 @@ _.minByPath = (object, path) => {
  * @returns {Object} Returns the new object.
  * @throws {Error} If either path does not lead to an array.
  */
-_.zipObjectByPath = (object, keysPath, valuesPath) => {
+_.path.zipObject = (object, keysPath, valuesPath) => {
   const keys = _.get(object, keysPath);
   const values = _.get(object, valuesPath);
   if (!Array.isArray(keys) || !Array.isArray(values)) {
@@ -1143,40 +1008,13 @@ _.zipObjectByPath = (object, keysPath, valuesPath) => {
 };
 
 /**
- * Gets values at the specified path, supporting wildcards.
- * @param {Object} object - The object to query.
- * @param {string|string[]} path - The path to get, supporting wildcards.
- * @returns {Array} An array of values found at the paths.
- */
-_.getWildcard = (object, path, defaultValue) => {
-  const paths = _.resolveWildcardPath(object, path);
-  if (paths.length === 1) {
-    return _.get(object, paths[0], defaultValue);
-  }
-  return paths.map(p => _.get(object, p, defaultValue));
-};
-
-/**
- * Sets values at the specified path, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to set, supporting wildcards.
- * @param {*} value - The value to set.
- * @returns {Object} The modified object.
- */
-_.setWildcard = (object, path, value) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach(p => _.set(object, p, value));
-  return object;
-};
-
-/**
  * Deep freezes an object at the specified path.
  * @param {Object} object - The object to modify.
  * @param {string|string[]} path - The path to the object to freeze.
  * @returns {Object} The modified object.
  * @throws {Error} If the value at the path is not an object.
  */
-_.deepFreezeByPath = (object, path) => {
+_.path.deepFreeze = (object, path) => {
   const targetObject = _.get(object, path);
   if (!_.isObject(targetObject)) {
     throw new Error(`Value at path ${path} is not an object`);
@@ -1200,409 +1038,7 @@ _.deepFreezeByPath = (object, path) => {
  * @returns {Object} The modified object with the specified path flattened.
  * @throws {Error} If the value at the path is not an object.
  */
-_.flattenObjectByPath = (object, path) => {
-  const targetObject = _.get(object, path);
-  if (!_.isObject(targetObject)) {
-    throw new Error(`Value at path ${path} is not an object`);
-  }
-  
-  const flatten = (obj, prefix = "") => {
-    return Object.keys(obj).reduce((acc, k) => {
-      const pre = prefix.length ? prefix + "." : "";
-      if (
-        typeof obj[k] === "object" &&
-        obj[k] !== null &&
-        !Array.isArray(obj[k])
-      ) {
-        Object.assign(acc, flatten(obj[k], pre + k));
-      } else {
-        acc[pre + k] = obj[k];
-      }
-      return acc;
-    }, {});
-  };
-
-  const flattenedObject = flatten(targetObject);
-  
-  // Remove the original nested object
-  _.unset(object, path);
-
-  // Set the flattened key-value pairs
-  _.set(object, path, flattenedObject);
-
-  return object;
-};
-
-/**
- * Checks if the value at the specified path is a Date object.
- * @param {Object} object - The object to check.
- * @param {string|string[]} path - The path to the value.
- * @returns {boolean} True if the value is a Date object, false otherwise.
- */
-_.isDateByPath = (object, path) => {
-  return _.isDate(_.get(object, path));
-};
-
-/**
- * Deep clones a value at the specified path.
- * @param {Object} object - The object to clone from.
- * @param {string|string[]} path - The path to the value to clone.
- * @returns {*} The deep cloned value.
- */
-_.cloneDeepByPath = (object, path) => {
-  return _.cloneDeep(_.get(object, path));
-};
-
-/**
- * Compares values at two different paths for equality.
- * @param {Object} object - The object to compare in.
- * @param {string|string[]} path1 - The first path.
- * @param {string|string[]} path2 - The second path.
- * @returns {boolean} True if the values are equal, false otherwise.
- */
-_.isEqualByPath = (object, path1, path2) => {
-  return _.isEqual(_.get(object, path1), _.get(object, path2));
-};
-
-/**
- * Assigns default properties deeply at a specific path.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to assign defaults.
- * @param {Object} defaults - The default properties to assign.
- * @returns {Object} The modified object.
- */
-_.defaultsDeepByPath = (object, path, defaults) => {
-  const current = _.get(object, path, {});
-  const result = _.defaultsDeep({}, current, defaults);
-  return _.set(object, path, result);
-};
-
-/**
- * Finds an element in an array at a specific path that satisfies a predicate.
- * @param {Object} object - The object containing the array.
- * @param {string|string[]} path - The path to the array.
- * @param {Function} predicate - The function invoked per iteration.
- * @returns {*} Returns the matched element, else undefined.
- * @throws {Error} If the path does not lead to an array.
- */
-_.findByPath = (object, path, predicate) => {
-  const array = _.get(object, path);
-  if (!Array.isArray(array)) {
-    throw new Error(`Path ${path} does not lead to an array`);
-  }
-  return _.find(array, predicate);
-};
-
-/**
- * Finds the index of an element in an array at a specific path that satisfies a predicate.
- * @param {Object} object - The object containing the array.
- * @param {string|string[]} path - The path to the array.
- * @param {Function} predicate - The function invoked per iteration.
- * @returns {number} Returns the index of the found element, else -1.
- * @throws {Error} If the path does not lead to an array.
- */
-_.findIndexByPath = (object, path, predicate) => {
-  const array = _.get(object, path);
-  if (!Array.isArray(array)) {
-    throw new Error(`Path ${path} does not lead to an array`);
-  }
-  return _.findIndex(array, predicate);
-};
-
-/**
- * Gets values at the specified path, supporting wildcards.
- * @param {Object} object - The object to query.
- * @param {string|string[]} path - The path to get, supporting wildcards.
- * @returns {Array} An array of values found at the paths.
- */
-_.getByWildcardPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
-  return paths.map((p) => _.get(object, p));
-};
-
-/**
- * Sets values at the specified path, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to set, supporting wildcards.
- * @param {*} value - The value to set.
- * @returns {Object} The modified object.
- */
-_.setByWildcardPath = (object, path, value) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => _.set(object, p, value));
-  return object;
-};
-
-/**
- * Removes properties at the specified path, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to remove, supporting wildcards.
- * @returns {Object} The modified object.
- */
-_.removeByWildcardPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => _.unset(object, p));
-  return object;
-};
-
-/**
- * Increments numbers at the specified paths, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the numbers, supporting wildcards.
- * @param {number} [amount=1] - The amount to increment by.
- * @returns {Object} The modified object.
- */
-_.incrementByWildcardPath = (object, path, amount = 1) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => {
-    const currentValue = _.get(object, p);
-    if (typeof currentValue === "number") {
-      _.set(object, p, currentValue + amount);
-    }
-  });
-  return object;
-};
-
-/**
- * Toggles boolean values at the specified paths, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the boolean values, supporting wildcards.
- * @returns {Object} The modified object.
- */
-_.toggleBooleanByWildcardPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => {
-    const currentValue = _.get(object, p);
-    if (typeof currentValue === "boolean") {
-      _.set(object, p, !currentValue);
-    }
-  });
-  return object;
-};
-
-/**
- * Gets values at the specified path, supporting wildcards.
- * @param {Object} object - The object to query.
- * @param {string|string[]} path - The path to get, supporting wildcards.
- * @returns {Array} An array of values found at the paths.
- */
-_.getByWildcardPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
-  return paths.map((p) => _.get(object, p));
-};
-
-/**
- * Sets values at the specified path, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to set, supporting wildcards.
- * @param {*} value - The value to set.
- * @returns {Object} The modified object.
- */
-_.setByWildcardPath = (object, path, value) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => _.set(object, p, value));
-  return object;
-};
-
-/**
- * Removes properties at the specified path, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to remove, supporting wildcards.
- * @returns {Object} The modified object.
- */
-_.removeByWildcardPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => _.unset(object, p));
-  return object;
-};
-
-/**
- * Increments numbers at the specified paths, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the numbers, supporting wildcards.
- * @param {number} [amount=1] - The amount to increment by.
- * @returns {Object} The modified object.
- */
-_.incrementByWildcardPath = (object, path, amount = 1) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => {
-    const currentValue = _.get(object, p);
-    if (typeof currentValue === "number") {
-      _.set(object, p, currentValue + amount);
-    }
-  });
-  return object;
-};
-
-/**
- * Toggles boolean values at the specified paths, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the boolean values, supporting wildcards.
- * @returns {Object} The modified object.
- */
-_.toggleBooleanByWildcardPath = (object, path) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach((p) => {
-    const currentValue = _.get(object, p);
-    if (typeof currentValue === "boolean") {
-      _.set(object, p, !currentValue);
-    }
-  });
-  return object;
-};
-
-/**
- * Gets unique elements from an array at a specific path.
- * @param {Object} object - The object containing the array.
- * @param {string|string[]} path - The path to the array.
- * @returns {Array} Returns the new duplicate free array.
- * @throws {Error} If the path does not lead to an array.
- */
-_.uniqueByPath = (object, path) => {
-  const array = _.get(object, path);
-  if (!Array.isArray(array)) {
-    throw new Error(`Path ${path} does not lead to an array`);
-  }
-  return _.uniq(array);
-};
-
-/**
- * Groups elements of an array at a specific path based on a given criteria.
- * @param {Object} object - The object containing the array.
- * @param {string|string[]} path - The path to the array.
- * @param {Function|string} iteratee - The iteratee to transform keys.
- * @returns {Object} Returns the composed aggregate object.
- * @throws {Error} If the path does not lead to an array.
- */
-_.groupByPath = (object, path, iteratee) => {
-  const array = _.get(object, path);
-  if (!Array.isArray(array)) {
-    throw new Error(`Path ${path} does not lead to an array`);
-  }
-  return _.groupBy(array, iteratee);
-};
-
-/**
- * Sums numeric values in an array at a specific path.
- * @param {Object} object - The object containing the array.
- * @param {string|string[]} path - The path to the array.
- * @returns {number} Returns the sum.
- * @throws {Error} If the path does not lead to an array.
- */
-_.sumByPath = (object, path) => {
-  const array = _.get(object, path);
-  if (!Array.isArray(array)) {
-    throw new Error(`Path ${path} does not lead to an array`);
-  }
-  return _.sum(array);
-};
-
-/**
- * Gets the maximum value from an array at a specific path.
- * @param {Object} object - The object containing the array.
- * @param {string|string[]} path - The path to the array.
- * @returns {*} Returns the maximum value.
- * @throws {Error} If the path does not lead to an array.
- */
-_.maxByPath = (object, path) => {
-  const array = _.get(object, path);
-  if (!Array.isArray(array)) {
-    throw new Error(`Path ${path} does not lead to an array`);
-  }
-  return _.max(array);
-};
-
-/**
- * Gets the minimum value from an array at a specific path.
- * @param {Object} object - The object containing the array.
- * @param {string|string[]} path - The path to the array.
- * @returns {*} Returns the minimum value.
- * @throws {Error} If the path does not lead to an array.
- */
-_.minByPath = (object, path) => {
-  const array = _.get(object, path);
-  if (!Array.isArray(array)) {
-    throw new Error(`Path ${path} does not lead to an array`);
-  }
-  return _.min(array);
-};
-
-/**
- * Creates an object from two arrays at specific paths (keys and values).
- * @param {Object} object - The object containing the arrays.
- * @param {string|string[]} keysPath - The path to the keys array.
- * @param {string|string[]} valuesPath - The path to the values array.
- * @returns {Object} Returns the new object.
- * @throws {Error} If either path does not lead to an array.
- */
-_.zipObjectByPath = (object, keysPath, valuesPath) => {
-  const keys = _.get(object, keysPath);
-  const values = _.get(object, valuesPath);
-  if (!Array.isArray(keys) || !Array.isArray(values)) {
-    throw new Error("Both paths must lead to arrays");
-  }
-  return _.zipObject(keys, values);
-};
-
-/**
- * Gets values at the specified path, supporting wildcards.
- * @param {Object} object - The object to query.
- * @param {string|string[]} path - The path to get, supporting wildcards.
- * @returns {Array} An array of values found at the paths.
- */
-_.getWildcard = (object, path, defaultValue) => {
-  const paths = _.resolveWildcardPath(object, path);
-  if (paths.length === 1) {
-    return _.get(object, paths[0], defaultValue);
-  }
-  return paths.map(p => _.get(object, p, defaultValue));
-};
-
-/**
- * Sets values at the specified path, supporting wildcards.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to set, supporting wildcards.
- * @param {*} value - The value to set.
- * @returns {Object} The modified object.
- */
-_.setWildcard = (object, path, value) => {
-  const paths = _.resolveWildcardPath(object, path);
-  paths.forEach(p => _.set(object, p, value));
-  return object;
-};
-
-/**
- * Deep freezes an object at the specified path.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the object to freeze.
- * @returns {Object} The modified object.
- * @throws {Error} If the value at the path is not an object.
- */
-_.deepFreezeByPath = (object, path) => {
-  const targetObject = _.get(object, path);
-  if (!_.isObject(targetObject)) {
-    throw new Error(`Value at path ${path} is not an object`);
-  }
-  
-  const deepFreeze = (obj) => {
-    Object.keys(obj).forEach(prop => {
-      if (typeof obj[prop] === 'object' && !Object.isFrozen(obj[prop])) 
-        deepFreeze(obj[prop]);
-    });
-    return Object.freeze(obj);
-  };
-  
-  return _.set(object, path, deepFreeze(targetObject));
-};
-
-/**
- * Flattens an object at the specified path.
- * @param {Object} object - The object to modify.
- * @param {string|string[]} path - The path to the object to flatten.
- * @returns {Object} The modified object with the specified path flattened.
- * @throws {Error} If the value at the path is not an object.
- */
-_.flattenObjectByPath = (object, path) => {
+_.path.flatten = (object, path) => {
   const targetObject = _.get(object, path);
   if (!_.isObject(targetObject)) {
     throw new Error(`Value at path ${path} is not an object`);

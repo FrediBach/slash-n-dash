@@ -2,13 +2,13 @@ import _ from "../src/index.js";
 
 test("simple get", () => {
   const obj = { a: { a: "test1", b: "test2" } };
-  expect(_.get(obj, "a.b")).toBe("test2");
+  expect(_.path.get(obj, "a.b")).toBe("test2");
 });
 
 test("simple set", () => {
   const obj = { a: { a: "test1", b: "test2" } };
-  _.set(obj, "a.b", "test3");
-  expect(_.get(obj, "a.b")).toBe("test3");
+  _.path.set(obj, "a.b", "test3");
+  expect(_.path.get(obj, "a.b")).toBe("test3");
 });
 
 describe("Lodash Extended Methods", () => {
@@ -32,9 +32,9 @@ describe("Lodash Extended Methods", () => {
     };
   });
 
-  test("resolveWildcardPath", () => {
-    expect(_.resolveWildcardPath(testObject, "a.*.c")).toEqual(["a.b.c"]);
-    expect(_.resolveWildcardPath(testObject, "a.**")).toEqual([
+  test("resolve", () => {
+    expect(_.path.resolve(testObject, "a.*.c")).toEqual(["a.b.c"]);
+    expect(_.path.resolve(testObject, "a.**")).toEqual([
       "a.b",
       "a.b.c",
       "a.b.d",
@@ -44,149 +44,145 @@ describe("Lodash Extended Methods", () => {
       "a.e.2",
       "a.f",
     ]);
-    expect(_.resolveWildcardPath(testObject, "a.e.*")).toEqual([
+    expect(_.path.resolve(testObject, "a.e.*")).toEqual([
       "a.e.0",
       "a.e.1",
       "a.e.2",
     ]);
     
     // OR selector test
-    expect(_.resolveWildcardPath(testObject, "a.b|e.*")).toEqual(["a.b.c", "a.b.d", "a.e.0", "a.e.1", "a.e.2"]);
+    expect(_.path.resolve(testObject, "a.b|e.*")).toEqual(["a.b.c", "a.b.d", "a.e.0", "a.e.1", "a.e.2"]);
 
     // Exclusion selector test
-    expect(_.resolveWildcardPath(testObject, "a.*!e")).toEqual(["a.b", "a.f"]);
+    expect(_.path.resolve(testObject, "a.*!e")).toEqual(["a.b", "a.f"]);
   });
 
-  test("getWildcard", () => {
-    expect(_.getWildcard(testObject, "a.b.c")).toBe(1);
-    expect(_.getWildcard(testObject, "a.*.c")).toEqual(1);
-    expect(_.getWildcard(testObject, "a.e.*")).toEqual([1, 2, 3]);
+  test("get", () => {
+    expect(_.path.get(testObject, "a.b.c")).toBe(1);
+    expect(_.path.get(testObject, "a.*.c")).toEqual(1);
+    expect(_.path.get(testObject, "a.e.*")).toEqual([1, 2, 3]);
 
     // OR selector test
-    expect(_.getWildcard(testObject, "a.e|f")).toEqual([[1, 2, 3], true]);
+    expect(_.path.get(testObject, "a.e|f")).toEqual([[1, 2, 3], true]);
 
     // Exclusion selector test
-    expect(_.getWildcard(testObject, "a.*!e")).toEqual([
+    expect(_.path.get(testObject, "a.*!e")).toEqual([
         { "c": 1, "d": "test" },
         true
     ]);
   });
 
-  test("setWildcard", () => {
-    _.setWildcard(testObject, "a.*.c", 5);
+  test("set", () => {
+    _.path.set(testObject, "a.*.c", 5);
     expect(testObject.a.b.c).toBe(5);
 
-    _.setWildcard(testObject, "a.e.*", 0);
+    _.path.set(testObject, "a.e.*", 0);
     expect(testObject.a.e).toEqual([0, 0, 0]);
   });
 
-  test("removeByPath", () => {
-    _.removeByPath(testObject, "a.b.c");
+  test("remove", () => {
+    _.path.remove(testObject, "a.b.c");
     expect(testObject.a.b.c).toBeUndefined();
 
-    _.removeByPath(testObject, "a.e");
+    _.path.remove(testObject, "a.e");
     expect(testObject.a.e).toBeUndefined();
   });
 
-  test("pushToArrayByPath", () => {
-    _.pushToArrayByPath(testObject, "a.e", 4);
+  test("push", () => {
+    _.path.push(testObject, "a.e", 4);
     expect(testObject.a.e).toEqual([1, 2, 3, 4]);
 
-    expect(() => _.pushToArrayByPath(testObject, "a.b", 5)).toThrow();
+    expect(() => _.path.push(testObject, "a.b", 5)).toThrow();
   });
 
-  test("popFromArrayByPath", () => {
-    expect(_.popFromArrayByPath(testObject, "a.e")).toBe(3);
+  test("pop", () => {
+    expect(_.path.pop(testObject, "a.e")).toBe(3);
     expect(testObject.a.e).toEqual([1, 2]);
 
-    expect(() => _.popFromArrayByPath(testObject, "a.b")).toThrow();
+    expect(() => _.path.pop(testObject, "a.b")).toThrow();
   });
 
-  test("unshiftToArrayByPath", () => {
-    expect(_.unshiftToArrayByPath(testObject, "a.e", 0)).toBe(4);
+  test("unshift", () => {
+    expect(_.path.unshift(testObject, "a.e", 0)).toBe(4);
     expect(testObject.a.e).toEqual([0, 1, 2, 3]);
 
-    expect(() => _.unshiftToArrayByPath(testObject, "a.b", 5)).toThrow();
+    expect(() => _.path.unshift(testObject, "a.b", 5)).toThrow();
   });
 
-  test("shiftFromArrayByPath", () => {
-    expect(_.shiftFromArrayByPath(testObject, "a.e")).toBe(1);
+  test("shift", () => {
+    expect(_.path.shift(testObject, "a.e")).toBe(1);
     expect(testObject.a.e).toEqual([2, 3]);
 
-    expect(() => _.shiftFromArrayByPath(testObject, "a.b")).toThrow();
+    expect(() => _.path.shift(testObject, "a.b")).toThrow();
   });
 
-  test("insertAtIndexByPath", () => {
-    _.insertAtIndexByPath(testObject, "a.e", 4, 1);
+  test("insertAtIndex", () => {
+    _.path.insertAtIndex(testObject, "a.e", 4, 1);
     expect(testObject.a.e).toEqual([1, 4, 2, 3]);
 
-    expect(() => _.insertAtIndexByPath(testObject, "a.b", 5, 0)).toThrow();
+    expect(() => _.path.insertAtIndex(testObject, "a.b", 5, 0)).toThrow();
   });
 
-  test("removeAtIndexByPath", () => {
-    const result = _.removeAtIndexByPath(testObject, "a.e", 1);
+  test("removeAtIndex", () => {
+    const result = _.path.removeAtIndex(testObject, "a.e", 1);
     expect(result.removedValues).toEqual([2]);
     expect(testObject.a.e).toEqual([1, 3]);
 
-    expect(() => _.removeAtIndexByPath(testObject, "a.b", 0)).toThrow();
+    expect(() => _.path.removeAtIndex(testObject, "a.b", 0)).toThrow();
   });
 
-  test("hasPathValue", () => {
-    expect(_.hasPathValue(testObject, "a.b.c")).toBe(true);
-    expect(_.hasPathValue(testObject, "a.b.x")).toBe(false);
+  test("hasValue", () => {
+    expect(_.path.hasValue(testObject, "a.b.c")).toBe(true);
+    expect(_.path.hasValue(testObject, "a.b.x")).toBe(false);
   });
 
-  test("toggleBooleanByPath", () => {
-    _.toggleBooleanByPath(testObject, "a.f");
+  test("toggleBoolean", () => {
+    _.path.toggleBoolean(testObject, "a.f");
     expect(testObject.a.f).toBe(false);
-
-    expect(() => _.toggleBooleanByPath(testObject, "a.b.c")).toThrow();
   });
 
-  test("mergeByPath", () => {
-    _.mergeByPath(testObject, "a.b", { x: 10 });
+  test("merge", () => {
+    _.path.merge(testObject, "a.b", { x: 10 });
     expect(testObject.a.b).toEqual({ c: 1, d: "test", x: 10 });
   });
 
-  test("incrementByPath", () => {
-    _.incrementByPath(testObject, "a.b.c");
+  test("increment", () => {
+    _.path.increment(testObject, "a.b.c");
     expect(testObject.a.b.c).toBe(2);
 
-    _.incrementByPath(testObject, "a.b.c", 5);
+    _.path.increment(testObject, "a.b.c", 5);
     expect(testObject.a.b.c).toBe(7);
-
-    expect(() => _.incrementByPath(testObject, "a.b.d")).toThrow();
   });
 
-  test("decrementByPath", () => {
-    _.decrementByPath(testObject, "a.b.c");
+  test("decrement", () => {
+    _.path.decrement(testObject, "a.b.c");
     expect(testObject.a.b.c).toBe(0);
 
-    _.decrementByPath(testObject, "a.b.c", 5);
+    _.path.decrement(testObject, "a.b.c", 5);
     expect(testObject.a.b.c).toBe(-5);
 
-    expect(() => _.decrementByPath(testObject, "a.b.d")).toThrow();
+    expect(() => _.path.decrement(testObject, "a.b.d")).toThrow();
   });
 
-  test("appendStringByPath", () => {
-    _.appendStringByPath(testObject, "a.b.d", " appended");
+  test("appendString", () => {
+    _.path.appendString(testObject, "a.b.d", " appended");
     expect(testObject.a.b.d).toBe("test appended");
 
     expect(() =>
-      _.appendStringByPath(testObject, "a.b.c", " appended")
+      _.path.appendString(testObject, "a.b.c", " appended")
     ).toThrow();
   });
 
-  test("renameKeyByPath", () => {
-    _.renameKeyByPath(testObject, "a.b.c", "x");
+  test("renameKey", () => {
+    _.path.renameKey(testObject, "a.b.c", "x");
     expect(testObject.a.b.x).toBe(1);
     expect(testObject.a.b.c).toBeUndefined();
 
-    expect(() => _.renameKeyByPath(testObject, "a.b.y", "z")).toThrow();
+    expect(() => _.path.renameKey(testObject, "a.b.y", "z")).toThrow();
   });
 
-  test("filterObjectByPath", () => {
-    _.filterObjectByPath(
+  test("filterObject", () => {
+    _.path.filterObject(
       testObject,
       "a.b",
       (value) => typeof value === "string"
@@ -194,57 +190,57 @@ describe("Lodash Extended Methods", () => {
     expect(testObject.a.b).toEqual({ d: "test" });
   });
 
-  test("mapObjectByPath", () => {
-    _.mapObjectByPath(testObject, "a.b", (value) =>
+  test("mapObject", () => {
+    _.path.mapObject(testObject, "a.b", (value) =>
       typeof value === "number" ? value * 2 : value
     );
     expect(testObject.a.b).toEqual({ c: 2, d: "test" });
   });
 
-  test("pickByPath", () => {
-    _.pickByPath(testObject, "a.b", ["c"]);
+  test("pick", () => {
+    _.path.pick(testObject, "a.b", ["c"]);
     expect(testObject.a.b).toEqual({ c: 1 });
   });
 
-  test("omitByPath", () => {
-    _.omitByPath(testObject, "a.b", ["c"]);
+  test("omit", () => {
+    _.path.omit(testObject, "a.b", ["c"]);
     expect(testObject.a.b).toEqual({ d: "test" });
   });
 
-  test("deepFreezeByPath", () => {
-    _.deepFreezeByPath(testObject, "a.b");
+  test("deepFreeze", () => {
+    _.path.deepFreeze(testObject, "a.b");
     expect(() => {
       testObject.a.b.c = 2;
     }).toThrow();
   });
 
-  test("setDefaultByPath", () => {
-    _.setDefaultByPath(testObject, "a.b.x", 10);
+  test("setDefault", () => {
+    _.path.setDefault(testObject, "a.b.x", 10);
     expect(testObject.a.b.x).toBe(10);
 
-    _.setDefaultByPath(testObject, "a.b.c", 10);
+    _.path.setDefault(testObject, "a.b.c", 10);
     expect(testObject.a.b.c).toBe(1);
   });
 
-  test("togglePropertyByPath", () => {
-    _.togglePropertyByPath(testObject, "a.b", "c", "x");
+  test("toggleProperty", () => {
+    _.path.toggleProperty(testObject, "a.b", "c", "x");
     expect(testObject.a.b.x).toBe(1);
     expect(testObject.a.b.c).toBeUndefined();
 
-    _.togglePropertyByPath(testObject, "a.b", "x", "c");
+    _.path.toggleProperty(testObject, "a.b", "x", "c");
     expect(testObject.a.b.c).toBe(1);
     expect(testObject.a.b.x).toBeUndefined();
 
-    expect(() => _.togglePropertyByPath(testObject, "a.b", "y", "z")).toThrow();
+    expect(() => _.path.toggleProperty(testObject, "a.b", "y", "z")).toThrow();
   });
 
-  test("countPropertiesByPath", () => {
-    expect(_.countPropertiesByPath(testObject, "a.b")).toBe(2);
-    expect(_.countPropertiesByPath(testObject, "a.e")).toBe(3);
+  test("countProperties", () => {
+    expect(_.path.countProperties(testObject, "a.b")).toBe(2);
+    expect(_.path.countProperties(testObject, "a.e")).toBe(3);
   });
 
-  test("flattenObjectByPath", () => {
-    const flattened = _.flattenObjectByPath(testObject, "a");
+  test("flatten", () => {
+    const flattened = _.path.flatten(testObject, "a");
     expect(flattened).toEqual({
       a: {
         "b.c": 1,
@@ -260,13 +256,13 @@ describe("Lodash Extended Methods", () => {
     });
   });
 
-  test("unflattenObjectByPath", () => {
+  test("unflatten", () => {
     const flatObject = {
         "x.y.z": 1,
         "x.y.w": 2,
         "x.a": 3,
     };
-    _.unflattenObjectByPath(testObject, "h", flatObject);
+    _.path.unflatten(testObject, "h", flatObject);
     expect(testObject.h).toEqual({
       x: {
         y: {
@@ -278,187 +274,187 @@ describe("Lodash Extended Methods", () => {
     });
   });
 
-  test("swapValuesByPath", () => {
-    _.swapValuesByPath(testObject, "a.b.c", "g.h.i");
+  test("swapValues", () => {
+    _.path.swapValues(testObject, "a.b.c", "g.h.i");
     expect(testObject.a.b.c).toBe("value");
     expect(testObject.g.h.i).toBe(1);
   });
 
-  test("sortArrayByPath", () => {
-    _.sortArrayByPath(testObject, "a.e", (a, b) => b - a);
+  test("sortArray", () => {
+    _.path.sortArray(testObject, "a.e", (a, b) => b - a);
     expect(testObject.a.e).toEqual([3, 2, 1]);
   });
 
-  test("sortObjectKeysByPath", () => {
-    _.sortObjectKeysByPath(testObject, "a.b", (a, b) => b.localeCompare(a));
+  test("sortObjectKeys", () => {
+    _.path.sortObjectKeys(testObject, "a.b", (a, b) => b.localeCompare(a));
     expect(Object.keys(testObject.a.b)).toEqual(["d", "c"]);
   });
 
-  test("sortObjectValuesByPath", () => {
-    _.sortObjectValuesByPath(testObject, "a.b", (a, b) => a - b);
+  test("sortObjectValues", () => {
+    _.path.sortObjectValues(testObject, "a.b", (a, b) => a - b);
     expect(Object.values(testObject.a.b)).toEqual([1, "test"]);
   });
 
-  test("reverseByPath", () => {
-    _.reverseByPath(testObject, "a.e");
+  test("reverse", () => {
+    _.path.reverse(testObject, "a.e");
     expect(testObject.a.e).toEqual([3, 2, 1]);
 
-    _.reverseByPath(testObject, "a.b.d");
+    _.path.reverse(testObject, "a.b.d");
     expect(testObject.a.b.d).toBe("tset");
   });
 
-  test("typeOfByPath", () => {
-    expect(_.typeOfByPath(testObject, "a.b.c")).toBe("number");
-    expect(_.typeOfByPath(testObject, "a.b.d")).toBe("string");
-    expect(_.typeOfByPath(testObject, "a.e")).toBe("object");
+  test("typeOf", () => {
+    expect(_.path.typeOf(testObject, "a.b.c")).toBe("number");
+    expect(_.path.typeOf(testObject, "a.b.d")).toBe("string");
+    expect(_.path.typeOf(testObject, "a.e")).toBe("object");
   });
 
-  test("isArrayByPath", () => {
-    expect(_.isArrayByPath(testObject, "a.e")).toBe(true);
-    expect(_.isArrayByPath(testObject, "a.b")).toBe(false);
+  test("isArray", () => {
+    expect(_.path.isArray(testObject, "a.e")).toBe(true);
+    expect(_.path.isArray(testObject, "a.b")).toBe(false);
   });
 
-  test("toIntByPath", () => {
+  test("toInt", () => {
     testObject.a.b.d = "42";
-    _.toIntByPath(testObject, "a.b.d");
+    _.path.toInt(testObject, "a.b.d");
     expect(testObject.a.b.d).toBe(42);
   });
 
-  test("toFloatByPath", () => {
+  test("toFloat", () => {
     testObject.a.b.d = "3.14";
-    _.toFloatByPath(testObject, "a.b.d");
+    _.path.toFloat(testObject, "a.b.d");
     expect(testObject.a.b.d).toBe(3.14);
   });
 
-  test("isNumberByPath", () => {
-    expect(_.isNumberByPath(testObject, "a.b.c")).toBe(true);
-    expect(_.isNumberByPath(testObject, "a.b.d")).toBe(false);
+  test("isNumber", () => {
+    expect(_.path.isNumber(testObject, "a.b.c")).toBe(true);
+    expect(_.path.isNumber(testObject, "a.b.d")).toBe(false);
   });
 
-  test("isStringByPath", () => {
-    expect(_.isStringByPath(testObject, "a.b.d")).toBe(true);
-    expect(_.isStringByPath(testObject, "a.b.c")).toBe(false);
+  test("isString", () => {
+    expect(_.path.isString(testObject, "a.b.d")).toBe(true);
+    expect(_.path.isString(testObject, "a.b.c")).toBe(false);
   });
 
-  test("isObjectByPath", () => {
-    expect(_.isObjectByPath(testObject, "a.b")).toBe(true);
-    expect(_.isObjectByPath(testObject, "a.b.c")).toBe(false);
+  test("isObject", () => {
+    expect(_.path.isObject(testObject, "a.b")).toBe(true);
+    expect(_.path.isObject(testObject, "a.b.c")).toBe(false);
   });
 
-  test("isNilByPath", () => {
-    expect(_.isNilByPath(testObject, "a.b.x")).toBe(true);
-    expect(_.isNilByPath(testObject, "a.b.c")).toBe(false);
+  test("isNil", () => {
+    expect(_.path.isNil(testObject, "a.b.x")).toBe(true);
+    expect(_.path.isNil(testObject, "a.b.c")).toBe(false);
   });
 
-  test("toBooleanByPath", () => {
-    _.toBooleanByPath(testObject, "a.b.c");
+  test("toBoolean", () => {
+    _.path.toBoolean(testObject, "a.b.c");
     expect(testObject.a.b.c).toBe(true);
 
-    _.toBooleanByPath(testObject, "a.b.d");
+    _.path.toBoolean(testObject, "a.b.d");
     expect(testObject.a.b.d).toBe(true);
 
     testObject.a.b.x = 0;
-    _.toBooleanByPath(testObject, "a.b.x");
+    _.path.toBoolean(testObject, "a.b.x");
     expect(testObject.a.b.x).toBe(false);
   });
 
-  test("getLengthByPath", () => {
-    expect(_.getLengthByPath(testObject, "a.e")).toBe(3);
-    expect(_.getLengthByPath(testObject, "a.b.d")).toBe(4);
-    expect(_.getLengthByPath(testObject, "a.b.c")).toBe(0);
+  test("getLength", () => {
+    expect(_.path.getLength(testObject, "a.e")).toBe(3);
+    expect(_.path.getLength(testObject, "a.b.d")).toBe(4);
+    expect(_.path.getLength(testObject, "a.b.c")).toBe(0);
   });
 
-  test("isEmptyByPath", () => {
-    expect(_.isEmptyByPath(testObject, "a.b")).toBe(false);
-    expect(_.isEmptyByPath(testObject, "a.b.x")).toBe(true);
+  test("isEmpty", () => {
+    expect(_.path.isEmpty(testObject, "a.b")).toBe(false);
+    expect(_.path.isEmpty(testObject, "a.b.x")).toBe(true);
   });
 
-  test("trimByPath", () => {
+  test("trim", () => {
     testObject.a.b.d = "  test  ";
-    _.trimByPath(testObject, "a.b.d");
+    _.path.trim(testObject, "a.b.d");
     expect(testObject.a.b.d).toBe("test");
   });
 
-  test("toUpperCaseByPath", () => {
-    _.toUpperCaseByPath(testObject, "a.b.d");
+  test("toUpperCase", () => {
+    _.path.toUpperCase(testObject, "a.b.d");
     expect(testObject.a.b.d).toBe("TEST");
   });
 
-  test("toLowerCaseByPath", () => {
+  test("toLowerCase", () => {
     testObject.a.b.d = "TEST";
-    _.toLowerCaseByPath(testObject, "a.b.d");
+    _.path.toLowerCase(testObject, "a.b.d");
     expect(testObject.a.b.d).toBe("test");
   });
 
-  test("isFunctionByPath", () => {
+  test("isFunction", () => {
     testObject.a.b.func = () => {};
-    expect(_.isFunctionByPath(testObject, "a.b.func")).toBe(true);
-    expect(_.isFunctionByPath(testObject, "a.b.c")).toBe(false);
+    expect(_.path.isFunction(testObject, "a.b.func")).toBe(true);
+    expect(_.path.isFunction(testObject, "a.b.c")).toBe(false);
   });
 
-  test("isDateByPath", () => {
+  test("isDate", () => {
     testObject.a.b.date = new Date();
-    expect(_.isDateByPath(testObject, "a.b.date")).toBe(true);
-    expect(_.isDateByPath(testObject, "a.b.c")).toBe(false);
+    expect(_.path.isDate(testObject, "a.b.date")).toBe(true);
+    expect(_.path.isDate(testObject, "a.b.c")).toBe(false);
   });
 
-  test("cloneDeepByPath", () => {
-    const cloned = _.cloneDeepByPath(testObject, "a.b");
+  test("cloneDeep", () => {
+    const cloned = _.path.cloneDeep(testObject, "a.b");
     expect(cloned).toEqual(testObject.a.b);
     expect(cloned).not.toBe(testObject.a.b);
   });
 
-  test("isEqualByPath", () => {
-    expect(_.isEqualByPath(testObject, "a.b.c", "a.b.c")).toBe(true);
-    expect(_.isEqualByPath(testObject, "a.b.c", "a.b.d")).toBe(false);
+  test("isEqual", () => {
+    expect(_.path.isEqual(testObject, "a.b.c", "a.b.c")).toBe(true);
+    expect(_.path.isEqual(testObject, "a.b.c", "a.b.d")).toBe(false);
   });
 
-  test("defaultsDeepByPath", () => {
-    _.defaultsDeepByPath(testObject, "a.b", { x: 10, y: 20 });
+  test("defaultsDeep", () => {
+    _.path.defaultsDeep(testObject, "a.b", { x: 10, y: 20 });
     expect(testObject.a.b).toEqual({ c: 1, d: "test", x: 10, y: 20 });
   });
 
-  test("findByPath", () => {
-    const result = _.findByPath(testObject, "a.e", (num) => num > 1);
+  test("find", () => {
+    const result = _.path.find(testObject, "a.e", (num) => num > 1);
     expect(result).toBe(2);
   });
 
-  test("findIndexByPath", () => {
-    const index = _.findIndexByPath(testObject, "a.e", (num) => num > 1);
+  test("findIndex", () => {
+    const index = _.path.findIndex(testObject, "a.e", (num) => num > 1);
     expect(index).toBe(1);
   });
 
-  test("uniqueByPath", () => {
+  test("unique", () => {
     testObject.a.e = [1, 2, 2, 3, 3, 4];
-    const unique = _.uniqueByPath(testObject, "a.e");
+    const unique = _.path.unique(testObject, "a.e");
     expect(unique).toEqual([1, 2, 3, 4]);
   });
 
-  test("groupByPath", () => {
+  test("group", () => {
     testObject.a.e = [1.1, 2.1, 2.3, 3.4];
-    const grouped = _.groupByPath(testObject, "a.e", Math.floor);
+    const grouped = _.path.group(testObject, "a.e", Math.floor);
     expect(grouped).toEqual({ 1: [1.1], 2: [2.1, 2.3], 3: [3.4] });
   });
 
-  test("sumByPath", () => {
-    const sum = _.sumByPath(testObject, "a.e");
+  test("sum", () => {
+    const sum = _.path.sum(testObject, "a.e");
     expect(sum).toBe(6);
   });
 
-  test("maxByPath", () => {
-    const max = _.maxByPath(testObject, "a.e");
+  test("max", () => {
+    const max = _.path.max(testObject, "a.e");
     expect(max).toBe(3);
   });
 
-  test("minByPath", () => {
-    const min = _.minByPath(testObject, "a.e");
+  test("min", () => {
+    const min = _.path.min(testObject, "a.e");
     expect(min).toBe(1);
   });
 
-  test("zipObjectByPath", () => {
+  test("zipObject", () => {
     testObject.keys = ["a", "b", "c"];
     testObject.values = [1, 2, 3];
-    const zipped = _.zipObjectByPath(testObject, "keys", "values");
+    const zipped = _.path.zipObject(testObject, "keys", "values");
     expect(zipped).toEqual({ a: 1, b: 2, c: 3 });
   });
 });
